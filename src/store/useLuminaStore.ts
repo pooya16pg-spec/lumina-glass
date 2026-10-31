@@ -8,6 +8,7 @@ export type StudioTab = "SYNTHESIS" | "ACOUSTIC" | "WORKFLOW" | "ECOSYSTEM";
 
 export interface EqBand {
   freq: string;
+  hz: number;
   label: { fa: string; en: string };
   gainDb: number;
 }
@@ -26,6 +27,11 @@ export interface GeneratedCreation {
   refractionIndex: string;
   timestamp: string;
   gradient: string;
+  params: {
+    orbComplexity: number;
+    orbFluidity: number;
+    orbIridescence: number;
+  };
 }
 
 interface LuminaState {
@@ -33,45 +39,44 @@ interface LuminaState {
   theme: LiquidTheme;
   activeTab: StudioTab;
   blurPx: number;
-  specularLevel: number;
-  // پارامترهای استودیوی سه‌بعدی و هوش مصنوعی
   orbComplexity: number;
   orbFluidity: number;
   orbIridescence: number;
   promptText: string;
   creations: GeneratedCreation[];
-  // پارامترهای استودیوی صوتی و رزونانس فرکانسی
   isAudioPlaying: boolean;
-  vocalWarmth: number;
-  spatialReverb: number;
   eqBands: EqBand[];
-  // تسک‌های کانبان شیشه‌ای
   tasks: SpatialTask[];
 }
 
 const INITIAL_EQ: EqBand[] = [
   {
     freq: "62 Hz",
+    hz: 62,
     label: { fa: "حجم و گرمای بم (Sub-Chest)", en: "Sub-Bass & Chest Warmth" },
     gainDb: 0.3,
   },
   {
     freq: "250 Hz",
+    hz: 250,
     label: { fa: "رزونانس پایه صدا (Fundamental)", en: "Vocal Body & Depth" },
     gainDb: 1.4,
   },
   {
     freq: "1 kHz",
+    hz: 1000,
     label: { fa: "وضوح میانی (Mid Presence)", en: "Core Mid Clarity" },
     gainDb: 0.8,
   },
   {
     freq: "4 kHz",
+    hz: 4000,
     label: { fa: "شفافیت و تفکیک (Articulation)", en: "Harmonic Definition" },
     gainDb: 2.1,
   },
   {
     freq: "12 kHz",
+    hz: 12000,
     label: { fa: "درخشش هوایی (Spatial Air)", en: "Crystal Air & Brilliance" },
     gainDb: 1.8,
   },
@@ -82,33 +87,32 @@ let globalState: LuminaState = {
   theme: "PEARL",
   activeTab: "SYNTHESIS",
   blurPx: 32,
-  specularLevel: 88,
   orbComplexity: 78,
   orbFluidity: 64,
   orbIridescence: 92,
   promptText:
-    "Iridescent liquid glass torus floating in pearl daylight studio, refractive caustics, 8k spatial UI",
+    "Iridescent liquid glass torus floating in pearl daylight studio, refractive caustics",
   creations: [
     {
       id: "GEN-401",
       title: "Refractive Pearl Torus",
       prompt: "Apple visionOS liquid glass geometry with soft rose-cyan caustics",
-      refractionIndex: "1.52 IOR",
-      timestamp: "10:15",
+      refractionIndex: "1.67 IOR",
+      timestamp: "Preset #1",
       gradient: "from-indigo-400 via-pink-300 to-cyan-300",
+      params: { orbComplexity: 78, orbFluidity: 64, orbIridescence: 92 },
     },
     {
       id: "GEN-402",
       title: "Acoustic Resonance Wave",
       prompt: "3D harmonic fluid ribbon vibrating at 62Hz chest resonance",
-      refractionIndex: "1.68 IOR",
-      timestamp: "09:48",
+      refractionIndex: "1.48 IOR",
+      timestamp: "Preset #2",
       gradient: "from-sky-400 via-purple-400 to-emerald-300",
+      params: { orbComplexity: 45, orbFluidity: 88, orbIridescence: 54 },
     },
   ],
-  isAudioPlaying: true,
-  vocalWarmth: 84,
-  spatialReverb: 42,
+  isAudioPlaying: false,
   eqBands: INITIAL_EQ,
   tasks: [
     {
@@ -123,20 +127,20 @@ let globalState: LuminaState = {
     {
       id: "TSK-2",
       title: {
-        fa: "کالیبراسیون اکولایزر فرکانس ۶۲ هرتز و تحلیلگر رزونانس صدا",
-        en: "Calibrate 62Hz Vocal Resonance Parametric EQ",
+        fa: "پیاده‌سازی موتور صدای واقعی Web Audio API روی اکولایزر ۵ بانده",
+        en: "Implement Real Web Audio API BiquadFilter DSP Chain",
       },
-      tag: "DSP AUDIO",
-      status: "DOING",
+      tag: "WEB-AUDIO DSP",
+      status: "DONE",
     },
     {
       id: "TSK-3",
       title: {
-        fa: "اتصال یکپارچه ۴ پروژه فلگ‌شیپ در هاب رزومه پویا گودرزی",
-        en: "Unify All 4 Flagship Projects in Executive Hub",
+        fa: "بهینه‌سازی کامل ریسپانسیو هدر و پروفایل برای نمایشگرهای اندروید",
+        en: "Optimize Mobile Viewport Containment for Android Devices",
       },
-      tag: "ARCHITECTURE",
-      status: "TODO",
+      tag: "MOBILE UX",
+      status: "DOING",
     },
   ],
 };
@@ -157,8 +161,22 @@ const setActiveTab = (activeTab: StudioTab) => setState(() => ({ activeTab }));
 
 const setBlurPx = (blurPx: number) => setState(() => ({ blurPx }));
 
-const setOrbParams = (patch: Partial<Pick<LuminaState, "orbComplexity" | "orbFluidity" | "orbIridescence" | "promptText">>) =>
-  setState(() => patch);
+const setOrbParams = (
+  patch: Partial<
+    Pick<
+      LuminaState,
+      "orbComplexity" | "orbFluidity" | "orbIridescence" | "promptText"
+    >
+  >
+) => setState(() => patch);
+
+const loadCreationPreset = (item: GeneratedCreation) =>
+  setState(() => ({
+    promptText: item.prompt,
+    orbComplexity: item.params.orbComplexity,
+    orbFluidity: item.params.orbFluidity,
+    orbIridescence: item.params.orbIridescence,
+  }));
 
 const generateNewCreation = () =>
   setState((s) => {
@@ -167,23 +185,29 @@ const generateNewCreation = () =>
       "from-rose-400 via-amber-200 to-sky-300",
       "from-emerald-300 via-cyan-300 to-indigo-400",
     ];
+    const ior = (1.3 + s.orbIridescence * 0.004).toFixed(2);
     const item: GeneratedCreation = {
       id: `GEN-${Math.floor(403 + Math.random() * 500)}`,
-      title: `Spatial Glass Morph #${s.creations.length + 1}`,
+      title: `Glass State (${s.orbIridescence}/${s.orbFluidity}/${s.orbComplexity})`,
       prompt: s.promptText || "Custom Liquid Glass Synthesis",
-      refractionIndex: `${(1.45 + Math.random() * 0.35).toFixed(2)} IOR`,
+      refractionIndex: `${ior} IOR`,
       timestamp: new Date().toLocaleTimeString("en-US", {
         hour12: false,
         hour: "2-digit",
         minute: "2-digit",
       }),
       gradient: gradients[s.creations.length % gradients.length],
+      params: {
+        orbComplexity: s.orbComplexity,
+        orbFluidity: s.orbFluidity,
+        orbIridescence: s.orbIridescence,
+      },
     };
-    return { creations: [item, ...s.creations.slice(0, 5)] };
+    return { creations: [item, ...s.creations.slice(0, 6)] };
   });
 
-const toggleAudioPlaying = () =>
-  setState((s) => ({ isAudioPlaying: !s.isAudioPlaying }));
+const setAudioPlaying = (playing: boolean) =>
+  setState(() => ({ isAudioPlaying: playing }));
 
 const updateEqBand = (index: number, gainDb: number) =>
   setState((s) => ({
@@ -237,8 +261,9 @@ export function useLuminaStore() {
     setActiveTab,
     setBlurPx,
     setOrbParams,
+    loadCreationPreset,
     generateNewCreation,
-    toggleAudioPlaying,
+    setAudioPlaying,
     updateEqBand,
     resetEqBands,
     cycleTaskStatus,

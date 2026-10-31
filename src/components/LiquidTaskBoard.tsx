@@ -92,7 +92,7 @@ export default function LiquidTaskBoard() {
           const columnTasks = tasks.filter((task) => task.status === column.id);
           const Icon = column.icon;
           return (
-            <section key={column.id} className="min-w-0 rounded-[24px] p-3 sm:p-4 bg-white/10 border border-white/30 space-y-3">
+            <section key={column.id} className="liquid-task-column min-w-0 rounded-[24px] p-3 sm:p-4 bg-white/10 border border-white/30 space-y-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 text-xs font-bold">
                   <Icon className="h-4 w-4 opacity-70" />

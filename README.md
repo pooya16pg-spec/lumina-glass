@@ -1,22 +1,28 @@
-# LuminaGlass — Liquid Glass & Browser Audio Lab
+# LuminaGlass — Liquid Glass, Optics & Browser Audio Lab
 
 **Author:** Pooya Goodarzi  
 **Live site:** https://pooya16pg-spec.github.io/lumina-glass/
 
-LuminaGlass is a client-side visual and audio experiment inspired by spatial glass interfaces.
+LuminaGlass is a browser-native exploration of spatial glass surfaces and hands-on audio processing.
 
 ## Optical studio
-- Interactive SVG-based glass geometry, theme controls, optical parameters, and local preset storage in the running app state.
-- PNG export renders the current optical configuration through the browser canvas.
-- The prompt field is saved as preset metadata; it does not call an AI image-generation service.
+- Tune iridescence, fluidity, and crystal-layer complexity with a live SVG preview.
+- Export the current optical state as a real PNG rendered with Canvas.
+- Name and save optical presets, restore them later, or delete presets you no longer need.
+- Presets and optical preferences persist in this browser's localStorage. The descriptive text field is preset metadata; it does not call an AI image-generation service.
 
 ## Audio lab
-- Five browser-native Web Audio filters process the built-in oscillator synth, a user-selected local audio file, or a microphone stream.
+- Five Biquad filters process the built-in oscillator synth, a selected local audio file, or microphone input.
+- Start from Flat, Warm, Clarity, or Cinematic EQ profiles, then tune each band manually.
 - AudioContext is resumed from the user's playback action.
-- Stopping audio releases oscillator nodes, microphone tracks, the AudioContext, and temporary object URLs created for uploaded files.
+- Stopping or switching sources releases oscillator nodes, microphone tracks, AudioContext resources, and temporary file object URLs.
+- EQ settings are saved locally; audio playback itself never resumes automatically after a reload.
 - Microphone access requires browser permission and a secure context (HTTPS or localhost).
 
-## Deployment and stack
-- Next.js 14 static export deployed to GitHub Pages.
-- React 18, TypeScript, Tailwind CSS, SVG/Canvas, and the Web Audio API.
-- No remote audio processing, server-side AI generation, user account, or cloud preset database is included.
+## Studio workflow
+- Maintain a three-stage local task board (Backlog, In Progress, Completed).
+- Add tasks, advance their status, and remove them.
+- Task state is saved in this browser; it is not a cloud project-management service.
+
+## Stack and deployment
+Next.js 16 static export, React 19, TypeScript, Tailwind CSS, SVG/Canvas, Web Audio API, and localStorage. Hosted on GitHub Pages with no remote audio processing, server-side AI generation, account system, or cloud preset database.

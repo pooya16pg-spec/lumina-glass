@@ -354,6 +354,9 @@ const cycleTaskStatus = (id: string) =>
     }),
   }));
 
+const deleteTask = (id: string) =>
+  setState((s) => ({ tasks: s.tasks.filter((task) => task.id !== id) }));
+
 const addTask = (titleText: string) =>
   setState((s) => {
     if (!titleText.trim()) return {};
@@ -363,7 +366,7 @@ const addTask = (titleText: string) =>
       tag: "CUSTOM",
       status: "TODO",
     };
-    return { tasks: [newTask, ...s.tasks] };
+    return { tasks: [newTask, ...s.tasks].slice(0, 100) };
   });
 
 export function useLuminaStore() {
@@ -390,6 +393,7 @@ export function useLuminaStore() {
     updateEqBand,
     resetEqBands,
     cycleTaskStatus,
+    deleteTask,
     addTask,
     hydrateLuminaPreferences,
     deleteCreationPreset,

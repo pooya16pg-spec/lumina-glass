@@ -173,3 +173,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+@media (max-width: 767px) {
+  .lumina-page { padding-bottom: max(1.5rem, env(safe-area-inset-bottom)); }
+  .lumina-header-scroll { scrollbar-width: none; -ms-overflow-style: none; }
+  .lumina-header-scroll::-webkit-scrollbar { display: none; }
+  .liquid-task-column { min-width: 0; overflow-wrap: anywhere; }
+}

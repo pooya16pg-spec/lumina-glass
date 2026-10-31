@@ -112,7 +112,7 @@ export default function AiSynthesisStudio() {
           backdropFilter: `blur(${blurPx}px) saturate(190%)`,
           WebkitBackdropFilter: `blur(${blurPx}px) saturate(190%)`,
         }}
-        className={`lg:col-span-7 ${shellClass} rounded-[28px] sm:rounded-[32px] p-4 sm:p-6 flex flex-col justify-between space-y-4 overflow-hidden`}
+        className={`lg:col-span-7 ${shellClass} rounded-[24px] sm:rounded-[32px] p-3.5 sm:p-5 md:p-6 flex flex-col justify-between space-y-4 overflow-hidden min-w-0`}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
@@ -251,7 +251,7 @@ export default function AiSynthesisStudio() {
             backdropFilter: `blur(${blurPx}px) saturate(190%)`,
             WebkitBackdropFilter: `blur(${blurPx}px) saturate(190%)`,
           }}
-          className={`${shellClass} rounded-[28px] sm:rounded-[32px] p-5 space-y-4`}
+          className={`${shellClass} rounded-[24px] sm:rounded-[32px] p-4 sm:p-5 space-y-4 min-w-0`}
         >
           <div className="flex items-center justify-between border-b border-white/25 pb-3">
             <div className="flex items-center gap-2">
@@ -337,7 +337,7 @@ export default function AiSynthesisStudio() {
             backdropFilter: `blur(${blurPx}px) saturate(190%)`,
             WebkitBackdropFilter: `blur(${blurPx}px) saturate(190%)`,
           }}
-          className={`${shellClass} rounded-[28px] sm:rounded-[32px] p-5 space-y-3.5 flex-1`}
+          className={`${shellClass} rounded-[24px] sm:rounded-[32px] p-4 sm:p-5 space-y-3.5 flex-1 min-w-0`}
         >
           <div className="flex items-center justify-between border-b border-white/25 pb-2.5">
             <div className="flex items-center gap-2">

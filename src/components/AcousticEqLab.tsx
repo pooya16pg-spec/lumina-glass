@@ -16,6 +16,7 @@ export default function AcousticEqLab() {
     setAudioPlaying,
     updateEqBand,
     resetEqBands,
+    applyEqPreset,
   } = useLuminaStore();
 
   const isLight = theme === "PEARL";
@@ -335,6 +336,29 @@ export default function AcousticEqLab() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-xs font-bold">{lang === "fa" ? "پروفایل‌های آماده اکولایزر" : "EQ Starting Presets"}</div>
+          <div className="text-[10px] opacity-65">{lang === "fa" ? "یک نقطه شروع انتخاب کن، سپس هر باند را دستی تنظیم کن." : "Choose a starting curve, then fine-tune each band."}</div>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {([
+            { id: "FLAT", fa: "تخت", en: "Flat" },
+            { id: "WARM", fa: "گرم", en: "Warm" },
+            { id: "CLARITY", fa: "وضوح", en: "Clarity" },
+            { id: "CINEMATIC", fa: "سینمایی", en: "Cinematic" },
+          ] as const).map((preset) => (
+            <button
+              key={preset.id}
+              type="button"
+              onClick={() => applyEqPreset(preset.id)}
+              className={`${btnClass} px-3 py-2 rounded-full text-[11px] font-bold`}
+            >
+              {lang === "fa" ? preset.fa : preset.en}
+            </button>
+          ))}
+        </div>
+      </div>
       <div
         dir="ltr"
         className="relative h-48 w-full rounded-[24px] bg-gradient-to-r from-indigo-500/10 via-fuchsia-500/10 to-cyan-500/15 border border-white/40 p-4 overflow-hidden flex flex-col justify-between"

@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background 0.5s ease, color 0.3s ease;
+}
+
+/* اتمسفر ۱: شیشه مایع مرواریدی روشن (Pearl Daylight - Apple visionOS Style) */
+.liquid-env-pearl {
+  background-color: #EEF2FF;
+  background-image:
+    radial-gradient(at 12% 15%, rgba(165, 180, 252, 0.65) 0px, transparent 48%),
+    radial-gradient(at 88% 12%, rgba(244, 114, 182, 0.42) 0px, transparent 48%),
+    radial-gradient(at 52% 85%, rgba(56, 189, 248, 0.45) 0px, transparent 52%),
+    radial-gradient(at 25% 75%, rgba(251, 191, 36, 0.25) 0px, transparent 45%);
+  color: #0F172A;
+}
+
+/* اتمسفر ۲: شفق قطبی کریستالی (Aurora Iridescent) */
+.liquid-env-aurora {
+  background-color: #0B1021;
+  background-image:
+    radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.42) 0px, transparent 48%),
+    radial-gradient(at 90% 18%, rgba(236, 72, 153, 0.35) 0px, transparent 48%),
+    radial-gradient(at 50% 90%, rgba(14, 165, 233, 0.35) 0px, transparent 52%);
+  color: #F8FAFC;
+}
+
+/* اتمسفر ۳: تیتانیوم رزگلد گرم (Titanium Rose) */
+.liquid-env-titanium {
+  background-color: #18121E;
+  background-image:
+    radial-gradient(at 15% 15%, rgba(2fb, 113, 133, 0.32) 0px, transparent 48%),
+    radial-gradient(at 85% 15%, rgba(251, 191, 36, 0.28) 0px, transparent 48%),
+    radial-gradient(at 50% 85%, rgba(168, 85, 247, 0.32) 0px, transparent 52%);
+  color: #FAF5FF;
+}
+
+/* پنل شیشه مایع در حالت روشن مرواریدی */
+.liquid-shell-light {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.42) 50%,
+    rgba(255, 255, 255, 0.62) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow:
+    0 24px 48px -12px rgba(30, 41, 59, 0.12),
+    0 4px 16px rgba(99, 102, 241, 0.08),
+    inset 0 2px 2px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.55);
+}
+
+/* پنل شیشه مایع در حالت کریستالی تیره */
+.liquid-shell-dark {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0.11) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow:
+    0 24px 55px -12px rgba(0, 0, 0, 0.55),
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.42),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.15);
+}
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* دکمه‌های کپسولی شیشه مایع (Liquid Pill Buttons) */
+.btn-liquid-light {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(241, 245, 249, 0.68) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.95) !important;
+  color: #1E293B !important;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07), inset 0 1.5px 1px #ffffff;
+}
+.btn-liquid-light:hover {
+  background: linear-gradient(180deg, #ffffff 0%, rgba(224, 231, 255, 0.85) 100%) !important;
+  transform: translateY(-1.5px);
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.18), inset 0 2px 1px #ffffff;
+}
+
+.btn-liquid-dark {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.26) !important;
+  color: #F8FAFC !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+}
+.btn-liquid-dark:hover {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.12) 100%) !important;
+  border-color: rgba(255, 255, 255, 0.5) !important;
+  transform: translateY(-1.5px);
+}
+
+.btn-liquid-primary {
+  background: linear-gradient(135deg, #4F46E5 0%, #EC4899 55%, #06B6D4 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 10px 28px -4px rgba(99, 102, 241, 0.55), inset 0 1.5px 1.5px rgba(255, 255, 255, 0.65);
+}
+.btn-liquid-primary:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1.5px) scale(1.01);
+  box-shadow: 0 14px 34px -4px rgba(236, 72, 153, 0.6), inset 0 2px 2px rgba(255, 255, 255, 0.8);
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(24px, -18px) scale(1.06); }
+}
+
+.liquid-blob {
+  animation: floatSlow 9s ease-in-out infinite;
+}

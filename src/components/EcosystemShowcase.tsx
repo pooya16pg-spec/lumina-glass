@@ -27,10 +27,10 @@ export default function EcosystemShowcase() {
     {
       num: "02",
       name: "AuraPulse — Quant FinTech Terminal",
-      styleTag: "High-Frequency Vector Charting & L2 Book",
+      styleTag: "SVG Charting & Paper Trading Demo",
       desc: {
-        fa: "ترمینال معاملاتی کوانتومی با موتور چارت برداری SVG، باندهای بولینگر، دفتر سفارشات زنده و ربات تریدر هوش مصنوعی.",
-        en: "Real-time algorithmic trading terminal with custom SVG candlestick engine, Bollinger Bands & AI Bot.",
+        fa: "داشبورد بازار با چارت SVG، دفتر سفارشات شبیه‌سازی‌شده و معاملات آزمایشی محلی؛ قیمت عمومی بایننس در صورت دسترسی شبکه.",
+        en: "Market dashboard with SVG candles, a simulated order book, and local paper trading; public Binance tickers when reachable.",
       },
       url: "https://pooya16pg-spec.github.io/aurapulse/",
       accent: "from-emerald-400 to-teal-500",
@@ -48,7 +48,7 @@ export default function EcosystemShowcase() {
     },
     {
       num: "04",
-      name: "LuminaGlass — Liquid Glass AI Studio",
+      name: "LuminaGlass — Liquid Glass Optical Studio",
       styleTag: "Apple visionOS Liquid Glass & DSP Audio",
       desc: {
         fa: "سوپر-اپلیکیشن شیشه مایع (Liquid Glass) با ۳ اتمسفر نوری، سنتز سه‌بعدی، اکولایزر پارامتریک فرکانسی و برد مدیریت پروژه.",
@@ -100,7 +100,7 @@ export default function EcosystemShowcase() {
             </h2>
             <p className="text-xs md:text-sm opacity-80 mt-1 max-w-2xl leading-relaxed">
               {lang === "fa"
-                ? "مجموعه ۴ پروژه فلگ‌شیپ با ۴ سبک طراحی و معماری کاملاً متفاوت (Spatial OS، FinTech Terminal، Node-Graph Studio و Liquid Glass AI) برای نمایش تسلط کامل بر مهندسی نرم‌افزار و UI/UX."
+                ? "مجموعه ۴ پروژه فلگ‌شیپ با ۴ سبک طراحی و معماری کاملاً متفاوت (Spatial OS، FinTech Terminal، Node-Graph Studio و Liquid Glass Optical Lab) برای نمایش تسلط کامل بر مهندسی نرم‌افزار و UI/UX."
                 : "A quartet of flagship web applications demonstrating mastery across Spatial WebOS, Quantitative FinTech, Distributed Node-Graphs, and Liquid Glass Optical UI."}
             </p>
           </div>

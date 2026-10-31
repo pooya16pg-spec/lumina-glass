@@ -187,7 +187,7 @@ const generateNewCreation = () =>
     ];
     const ior = (1.3 + s.orbIridescence * 0.004).toFixed(2);
     const item: GeneratedCreation = {
-      id: `GEN-${Math.floor(403 + Math.random() * 500)}`,
+      id: `GEN-${Date.now()}`,
       title: `Glass State (${s.orbIridescence}/${s.orbFluidity}/${s.orbComplexity})`,
       prompt: s.promptText || "Custom Liquid Glass Synthesis",
       refractionIndex: `${ior} IOR`,

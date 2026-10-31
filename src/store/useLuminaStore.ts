@@ -293,7 +293,7 @@ const generateNewCreation = () =>
     const ior = (1.3 + s.orbIridescence * 0.004).toFixed(2);
     const item: GeneratedCreation = {
       id: `GEN-${Date.now()}`,
-      title: `Glass State (${s.orbIridescence}/${s.orbFluidity}/${s.orbComplexity})`,
+      title: s.promptText.trim().slice(0, 42) || `Optical Preset ${s.creations.length + 1}`,
       prompt: s.promptText || "Custom Liquid Glass Synthesis",
       refractionIndex: `${ior} IOR`,
       timestamp: new Date().toLocaleTimeString("en-US", {

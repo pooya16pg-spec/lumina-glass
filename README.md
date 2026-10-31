@@ -1,9 +1,22 @@
-# LuminaGlass — Spatial Liquid Glass UI & Real-Time WebAudio DSP Studio
-**Lead Architect & Designer:** Pooya Goodarzi (Computer Engineering)  
-**Live Demo:** [https://pooya16pg-spec.github.io/lumina-glass/](https://pooya16pg-spec.github.io/lumina-glass/)
+# LuminaGlass — Liquid Glass & Browser Audio Lab
 
-## Engineering Case Study
-LuminaGlass explores Apple visionOS-inspired **Liquid Glass** optical surfaces combined with real browser-native signal processing:
-1. **Real Web Audio API Parametric EQ (`BiquadFilterNode` Chain):** Generates a multi-harmonic vocal/acoustic drone passed through 5 real-time peaking/lowshelf/highshelf audio filters (62Hz, 250Hz, 1kHz, 4kHz, 12kHz).
-2. **Procedural Caustics & Real PNG Renderer:** Interactive SVG/Canvas refractive geometry with preset state restoration (`localStorage`) and real high-resolution `.png` snapshot export.
-3. **Adaptive Multi-Atmosphere Glass System:** Supports Pearl Daylight, Crystal Aurora, and Rose Titanium themes with mobile-first responsive containment.
+**Author:** Pooya Goodarzi  
+**Live site:** https://pooya16pg-spec.github.io/lumina-glass/
+
+LuminaGlass is a client-side visual and audio experiment inspired by spatial glass interfaces.
+
+## Optical studio
+- Interactive SVG-based glass geometry, theme controls, optical parameters, and local preset storage in the running app state.
+- PNG export renders the current optical configuration through the browser canvas.
+- The prompt field is saved as preset metadata; it does not call an AI image-generation service.
+
+## Audio lab
+- Five browser-native Web Audio filters process the built-in oscillator synth, a user-selected local audio file, or a microphone stream.
+- AudioContext is resumed from the user's playback action.
+- Stopping audio releases oscillator nodes, microphone tracks, the AudioContext, and temporary object URLs created for uploaded files.
+- Microphone access requires browser permission and a secure context (HTTPS or localhost).
+
+## Deployment and stack
+- Next.js 14 static export deployed to GitHub Pages.
+- React 18, TypeScript, Tailwind CSS, SVG/Canvas, and the Web Audio API.
+- No remote audio processing, server-side AI generation, user account, or cloud preset database is included.

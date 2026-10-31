@@ -308,7 +308,7 @@ const generateNewCreation = () =>
         orbIridescence: s.orbIridescence,
       },
     };
-    return { creations: [item, ...s.creations.slice(0, 6)] };
+    return { creations: [item, ...s.creations.slice(0, 23)] };
   });
 
 const deleteCreationPreset = (id: string) =>

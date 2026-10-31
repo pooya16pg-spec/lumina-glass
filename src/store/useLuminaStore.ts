@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 export type Lang = "fa" | "en";
 export type LiquidTheme = "PEARL" | "AURORA" | "TITANIUM";
 export type StudioTab = "SYNTHESIS" | "ACOUSTIC" | "WORKFLOW" | "ECOSYSTEM";
+export type EqPreset = "FLAT" | "WARM" | "CLARITY" | "CINEMATIC";
 
 export interface EqBand {
   freq: string;
@@ -47,6 +48,7 @@ interface LuminaState {
   isAudioPlaying: boolean;
   eqBands: EqBand[];
   tasks: SpatialTask[];
+  isPreferencesHydrated: boolean;
 }
 
 const INITIAL_EQ: EqBand[] = [
@@ -114,6 +116,7 @@ let globalState: LuminaState = {
   ],
   isAudioPlaying: false,
   eqBands: INITIAL_EQ,
+  isPreferencesHydrated: false,
   tasks: [
     {
       id: "TSK-1",
@@ -146,11 +149,113 @@ let globalState: LuminaState = {
 };
 
 const listeners = new Set<() => void>();
+const STORAGE_KEY = "lumina-glass:workspace:v1";
+let hasHydratedPreferences = false;
+
+function persistPreferences(state: LuminaState) {
+  if (typeof window === "undefined" || !hasHydratedPreferences) return;
+  try {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        theme: state.theme,
+        blurPx: state.blurPx,
+        orbComplexity: state.orbComplexity,
+        orbFluidity: state.orbFluidity,
+        orbIridescence: state.orbIridescence,
+        promptText: state.promptText,
+        creations: state.creations.slice(0, 24),
+        eqBands: state.eqBands,
+        tasks: state.tasks.slice(0, 100),
+      })
+    );
+  } catch {
+    // Storage may be unavailable in private browsing; keep the current session usable.
+  }
+}
 
 function setState(updater: (prev: LuminaState) => Partial<LuminaState>) {
   globalState = { ...globalState, ...updater(globalState) };
+  persistPreferences(globalState);
   listeners.forEach((l) => l());
 }
+
+const hydrateLuminaPreferences = () => {
+  if (hasHydratedPreferences || typeof window === "undefined") return;
+  hasHydratedPreferences = true;
+
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw) as {
+        version?: number;
+        theme?: LiquidTheme;
+        blurPx?: number;
+        orbComplexity?: number;
+        orbFluidity?: number;
+        orbIridescence?: number;
+        promptText?: string;
+        creations?: GeneratedCreation[];
+        eqBands?: EqBand[];
+        tasks?: SpatialTask[];
+      };
+
+      const patch: Partial<LuminaState> = {};
+      if (saved.version === 1) {
+        if (saved.theme && ["PEARL", "AURORA", "TITANIUM"].includes(saved.theme)) patch.theme = saved.theme;
+        if (typeof saved.blurPx === "number" && Number.isFinite(saved.blurPx)) patch.blurPx = Math.max(12, Math.min(48, saved.blurPx));
+        if (typeof saved.orbComplexity === "number" && Number.isFinite(saved.orbComplexity)) patch.orbComplexity = Math.max(30, Math.min(100, saved.orbComplexity));
+        if (typeof saved.orbFluidity === "number" && Number.isFinite(saved.orbFluidity)) patch.orbFluidity = Math.max(15, Math.min(95, saved.orbFluidity));
+        if (typeof saved.orbIridescence === "number" && Number.isFinite(saved.orbIridescence)) patch.orbIridescence = Math.max(20, Math.min(100, saved.orbIridescence));
+        if (typeof saved.promptText === "string") patch.promptText = saved.promptText.slice(0, 240);
+        if (Array.isArray(saved.creations)) {
+          patch.creations = saved.creations.filter((item) =>
+            item &&
+            typeof item.id === "string" &&
+            typeof item.title === "string" &&
+            typeof item.prompt === "string" &&
+            item.params &&
+            Number.isFinite(item.params.orbComplexity) &&
+            Number.isFinite(item.params.orbFluidity) &&
+            Number.isFinite(item.params.orbIridescence)
+          ).slice(0, 24);
+        }
+        if (
+          Array.isArray(saved.eqBands) &&
+          saved.eqBands.length === INITIAL_EQ.length &&
+          saved.eqBands.every((band, index) =>
+            band &&
+            band.hz === INITIAL_EQ[index].hz &&
+            typeof band.gainDb === "number" &&
+            Number.isFinite(band.gainDb)
+          )
+        ) {
+          patch.eqBands = saved.eqBands.map((band, index) => ({
+            ...INITIAL_EQ[index],
+            gainDb: Math.max(-6, Math.min(6, Number(band.gainDb.toFixed(1)))),
+          }));
+        }
+        if (Array.isArray(saved.tasks)) {
+          patch.tasks = saved.tasks.filter((task) =>
+            task &&
+            typeof task.id === "string" &&
+            task.title &&
+            typeof task.title.fa === "string" &&
+            typeof task.title.en === "string" &&
+            ["TODO", "DOING", "DONE"].includes(task.status)
+          ).slice(0, 100);
+        }
+      }
+      globalState = { ...globalState, ...patch, isAudioPlaying: false, isPreferencesHydrated: true };
+    } else {
+      globalState = { ...globalState, isAudioPlaying: false, isPreferencesHydrated: true };
+    }
+  } catch {
+    globalState = { ...globalState, isAudioPlaying: false, isPreferencesHydrated: true };
+  }
+  listeners.forEach((l) => l());
+};
 
 const toggleLang = () =>
   setState((s) => ({ lang: s.lang === "fa" ? "en" : "fa" }));
@@ -205,6 +310,24 @@ const generateNewCreation = () =>
     };
     return { creations: [item, ...s.creations.slice(0, 6)] };
   });
+
+const deleteCreationPreset = (id: string) =>
+  setState((s) => ({ creations: s.creations.filter((item) => item.id !== id) }));
+
+const applyEqPreset = (preset: EqPreset) => {
+  const profiles: Record<EqPreset, number[]> = {
+    FLAT: [0, 0, 0, 0, 0],
+    WARM: [3, 2, 0, -1, -2],
+    CLARITY: [-2, -1, 1.5, 3, 1.5],
+    CINEMATIC: [2.5, 1.5, 0, 1.5, 2.5],
+  };
+  setState((s) => ({
+    eqBands: s.eqBands.map((band, index) => ({
+      ...band,
+      gainDb: profiles[preset][index],
+    })),
+  }));
+};
 
 const setAudioPlaying = (playing: boolean) =>
   setState(() => ({ isAudioPlaying: playing }));
@@ -268,5 +391,8 @@ export function useLuminaStore() {
     resetEqBands,
     cycleTaskStatus,
     addTask,
+    hydrateLuminaPreferences,
+    deleteCreationPreset,
+    applyEqPreset,
   };
 }

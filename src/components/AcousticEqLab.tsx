@@ -31,8 +31,11 @@ export default function AcousticEqLab() {
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const operationIdRef = useRef(0);
 
   const stopAllAudio = useCallback(() => {
+    // Invalidate pending permission, resume, and play promises before releasing resources.
+    operationIdRef.current += 1;
     oscsRef.current.forEach((o) => {
       try {
         o.stop();
@@ -101,12 +104,14 @@ export default function AcousticEqLab() {
 
   const startSynthMode = async () => {
     stopAllAudio();
+    const operationId = operationIdRef.current;
     try {
       const ctx = createAudioContext();
       audioCtxRef.current = ctx;
       await ctx.resume();
-      const firstFilter = buildFilterChain(ctx);
+      if (operationId !== operationIdRef.current) return;
 
+      const firstFilter = buildFilterChain(ctx);
       const freqs = [62, 124, 248, 372, 992];
       const createdOscs: OscillatorNode[] = freqs.map((hz, i) => {
         const osc = ctx.createOscillator();
@@ -120,44 +125,61 @@ export default function AcousticEqLab() {
         return osc;
       });
 
+      if (operationId !== operationIdRef.current) {
+        createdOscs.forEach((osc) => {
+          try { osc.stop(); } catch {}
+        });
+        return;
+      }
       oscsRef.current = createdOscs;
       setSourceMode("SYNTH");
       setAudioPlaying(true);
     } catch {
-      stopAllAudio();
-      alert(
-        lang === "fa"
-          ? "مرورگر نتوانست صدای Web Audio را راه‌اندازی کند."
-          : "The browser could not start Web Audio."
-      );
+      if (operationId === operationIdRef.current) {
+        stopAllAudio();
+        alert(
+          lang === "fa"
+            ? "مرورگر نتوانست صدای Web Audio را راه‌اندازی کند."
+            : "The browser could not start Web Audio."
+        );
+      }
     }
   };
 
   // پردازش ورودی واقعی میکروفون کاربر از طریق ۵ فیلتر Biquad (پاسخ به نقد ChatGPT)
   const startMicMode = async () => {
     stopAllAudio();
+    const operationId = operationIdRef.current;
     try {
       if (!navigator.mediaDevices?.getUserMedia) {
         throw new Error("Microphone capture is unavailable in this browser.");
       }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      if (operationId !== operationIdRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
       mediaStreamRef.current = stream;
 
       const ctx = createAudioContext();
       audioCtxRef.current = ctx;
       await ctx.resume();
+      if (operationId !== operationIdRef.current) return;
+
       const firstFilter = buildFilterChain(ctx);
       const micSource = ctx.createMediaStreamSource(stream);
       micSource.connect(firstFilter);
       setSourceMode("MIC");
       setAudioPlaying(true);
     } catch {
-      stopAllAudio();
-      alert(
-        lang === "fa"
-          ? "میکروفون در دسترس نیست یا مجوز آن داده نشد. برای حفظ حریم خصوصی، منبع صوتی دیگری به‌صورت خودکار پخش نمی‌شود."
-          : "Microphone access is unavailable or was denied. No other audio source will start automatically."
-      );
+      if (operationId === operationIdRef.current) {
+        stopAllAudio();
+        alert(
+          lang === "fa"
+            ? "میکروفون در دسترس نیست یا مجوز آن داده نشد. برای حفظ حریم خصوصی، منبع صوتی دیگری به‌صورت خودکار پخش نمی‌شود."
+            : "Microphone access is unavailable or was denied. No other audio source will start automatically."
+        );
+      }
     }
   };
 
@@ -168,6 +190,7 @@ export default function AcousticEqLab() {
     if (!file) return;
 
     stopAllAudio();
+    const operationId = operationIdRef.current;
     setFileName(file.name);
     try {
       const url = URL.createObjectURL(file);
@@ -184,16 +207,21 @@ export default function AcousticEqLab() {
       mediaNode.connect(firstFilter);
 
       await ctx.resume();
+      if (operationId !== operationIdRef.current) return;
       await audio.play();
+      if (operationId !== operationIdRef.current) return;
+
       setSourceMode("FILE");
       setAudioPlaying(true);
     } catch {
-      stopAllAudio();
-      alert(
-        lang === "fa"
-          ? "فایل صوتی پخش نشد. فرمت فایل و مجوز پخش مرورگر را بررسی کن."
-          : "The audio file could not be played. Check the file format and browser playback permission."
-      );
+      if (operationId === operationIdRef.current) {
+        stopAllAudio();
+        alert(
+          lang === "fa"
+            ? "فایل صوتی پخش نشد. فرمت فایل و مجوز پخش مرورگر را بررسی کن."
+            : "The audio file could not be played. Check the file format and browser playback permission."
+        );
+      }
     } finally {
       // Allow selecting the same file again after stopping or an error.
       input.value = "";

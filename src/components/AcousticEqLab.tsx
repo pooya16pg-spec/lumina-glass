@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLuminaStore } from "../store/useLuminaStore";
 import { Volume2, VolumeX, RotateCcw, Mic, Upload } from "lucide-react";
 
@@ -30,8 +30,9 @@ export default function AcousticEqLab() {
   const oscsRef = useRef<OscillatorNode[]>([]);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
-  const stopAllAudio = () => {
+  const stopAllAudio = useCallback(() => {
     oscsRef.current.forEach((o) => {
       try {
         o.stop();
@@ -43,7 +44,14 @@ export default function AcousticEqLab() {
     }
     if (audioElRef.current) {
       audioElRef.current.pause();
+      audioElRef.current.removeAttribute("src");
+      audioElRef.current.load();
+      audioElRef.current.onerror = null;
       audioElRef.current = null;
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
     }
     if (audioCtxRef.current) {
       audioCtxRef.current.close().catch(() => {});
@@ -52,6 +60,16 @@ export default function AcousticEqLab() {
     filtersRef.current = [];
     oscsRef.current = [];
     setAudioPlaying(false);
+  }, [setAudioPlaying]);
+
+  const createAudioContext = () => {
+    const AudioContextConstructor =
+      window.AudioContext ||
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextConstructor) {
+      throw new Error("Web Audio API is not supported in this browser.");
+    }
+    return new AudioContextConstructor();
   };
 
   const buildFilterChain = (ctx: AudioContext) => {
@@ -81,88 +99,105 @@ export default function AcousticEqLab() {
     return createdFilters[0];
   };
 
-  const startSynthMode = () => {
+  const startSynthMode = async () => {
     stopAllAudio();
-    const AudioCtx =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
-    const ctx = new AudioCtx();
-    audioCtxRef.current = ctx;
-    const firstFilter = buildFilterChain(ctx);
+    try {
+      const ctx = createAudioContext();
+      audioCtxRef.current = ctx;
+      await ctx.resume();
+      const firstFilter = buildFilterChain(ctx);
 
-    const freqs = [62, 124, 248, 372, 992];
-    const createdOscs: OscillatorNode[] = freqs.map((hz, i) => {
-      const osc = ctx.createOscillator();
-      const oscGain = ctx.createGain();
-      osc.type = i === 0 ? "sine" : i % 2 === 0 ? "triangle" : "sawtooth";
-      osc.frequency.value = hz;
-      oscGain.gain.value = i === 0 ? 0.55 : 0.18 / i;
-      osc.connect(oscGain);
-      oscGain.connect(firstFilter);
-      osc.start();
-      return osc;
-    });
+      const freqs = [62, 124, 248, 372, 992];
+      const createdOscs: OscillatorNode[] = freqs.map((hz, i) => {
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = i === 0 ? "sine" : i % 2 === 0 ? "triangle" : "sawtooth";
+        osc.frequency.value = hz;
+        oscGain.gain.value = i === 0 ? 0.55 : 0.18 / i;
+        osc.connect(oscGain);
+        oscGain.connect(firstFilter);
+        osc.start();
+        return osc;
+      });
 
-    oscsRef.current = createdOscs;
-    setSourceMode("SYNTH");
-    setAudioPlaying(true);
+      oscsRef.current = createdOscs;
+      setSourceMode("SYNTH");
+      setAudioPlaying(true);
+    } catch {
+      stopAllAudio();
+      alert(
+        lang === "fa"
+          ? "مرورگر نتوانست صدای Web Audio را راه‌اندازی کند."
+          : "The browser could not start Web Audio."
+      );
+    }
   };
 
   // پردازش ورودی واقعی میکروفون کاربر از طریق ۵ فیلتر Biquad (پاسخ به نقد ChatGPT)
   const startMicMode = async () => {
+    stopAllAudio();
     try {
-      stopAllAudio();
+      if (!navigator.mediaDevices?.getUserMedia) {
+        throw new Error("Microphone capture is unavailable in this browser.");
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
 
-      const AudioCtx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext })
-          .webkitAudioContext;
-      const ctx = new AudioCtx();
+      const ctx = createAudioContext();
       audioCtxRef.current = ctx;
+      await ctx.resume();
       const firstFilter = buildFilterChain(ctx);
-
       const micSource = ctx.createMediaStreamSource(stream);
       micSource.connect(firstFilter);
       setSourceMode("MIC");
       setAudioPlaying(true);
     } catch {
+      stopAllAudio();
       alert(
         lang === "fa"
-          ? "دسترسی به میکروفون داده نشد؛ سینت‌سایزر داخلی فعال می‌شود."
-          : "Microphone permission denied; falling back to internal synth."
+          ? "میکروفون در دسترس نیست یا مجوز آن داده نشد. برای حفظ حریم خصوصی، منبع صوتی دیگری به‌صورت خودکار پخش نمی‌شود."
+          : "Microphone access is unavailable or was denied. No other audio source will start automatically."
       );
-      startSynthMode();
     }
   };
 
   // پردازش فایل صوتی انتخابی کاربر (MP3/WAV) از طریق اکولایزر ۵ بانده
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
+
     stopAllAudio();
     setFileName(file.name);
+    try {
+      const url = URL.createObjectURL(file);
+      objectUrlRef.current = url;
+      const audio = new Audio(url);
+      audio.loop = true;
+      audio.preload = "auto";
+      audioElRef.current = audio;
 
-    const url = URL.createObjectURL(file);
-    const audio = new Audio(url);
-    audio.loop = true;
-    audioElRef.current = audio;
+      const ctx = createAudioContext();
+      audioCtxRef.current = ctx;
+      const firstFilter = buildFilterChain(ctx);
+      const mediaNode = ctx.createMediaElementSource(audio);
+      mediaNode.connect(firstFilter);
 
-    const AudioCtx =
-      window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
-    const ctx = new AudioCtx();
-    audioCtxRef.current = ctx;
-    const firstFilter = buildFilterChain(ctx);
-
-    const mediaNode = ctx.createMediaElementSource(audio);
-    mediaNode.connect(firstFilter);
-    audio.play();
-    setSourceMode("FILE");
-    setAudioPlaying(true);
+      await ctx.resume();
+      await audio.play();
+      setSourceMode("FILE");
+      setAudioPlaying(true);
+    } catch {
+      stopAllAudio();
+      alert(
+        lang === "fa"
+          ? "فایل صوتی پخش نشد. فرمت فایل و مجوز پخش مرورگر را بررسی کن."
+          : "The audio file could not be played. Check the file format and browser playback permission."
+      );
+    } finally {
+      // Allow selecting the same file again after stopping or an error.
+      input.value = "";
+    }
   };
 
   useEffect(() => {
@@ -184,7 +219,7 @@ export default function AcousticEqLab() {
     return () => {
       stopAllAudio();
     };
-  }, []);
+  }, [stopAllAudio]);
 
   return (
     <div

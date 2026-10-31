@@ -3,7 +3,7 @@
 import React from "react";
 import { useLuminaStore } from "../store/useLuminaStore";
 import SmartAssetImage from "./SmartAssetImage";
-import { Sparkles, Sliders, Wand2, Layers, Download, RotateCcw } from "lucide-react";
+import { Sparkles, Sliders, Wand2, Layers, Download, RotateCcw, Trash2 } from "lucide-react";
 
 export default function AiSynthesisStudio() {
   const {
@@ -18,6 +18,7 @@ export default function AiSynthesisStudio() {
     setOrbParams,
     loadCreationPreset,
     generateNewCreation,
+    deleteCreationPreset,
   } = useLuminaStore();
 
   const isLight = theme === "PEARL";
@@ -218,14 +219,16 @@ export default function AiSynthesisStudio() {
             <Wand2 className="w-4 h-4 text-indigo-500" />
             <span>
               {lang === "fa"
-                ? "ذخیره وضعیت فعلی در آرشیو (Save Current Preset):"
-                : "Save Current Optical State Preset:"}
+                ? "عنوان یا توضیح این Preset:"
+                : "Name or describe this optical preset:"}
             </span>
           </label>
           <div className="flex flex-col sm:flex-row gap-2">
             <input
               type="text"
               value={promptText}
+              maxLength={240}
+              placeholder={lang === "fa" ? "مثلاً کریستال مرواریدی با شکست نور آبی" : "e.g. Pearl crystal with cyan refraction"}
               onChange={(e) => setOrbParams({ promptText: e.target.value })}
               className={`${btnClass} flex-1 rounded-full px-4 py-2.5 text-xs font-mono focus:outline-none min-w-0`}
             />
@@ -352,34 +355,37 @@ export default function AiSynthesisStudio() {
 
           <div className="space-y-2.5 max-h-[210px] overflow-y-auto pr-1">
             {creations.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => loadCreationPreset(item)}
-                className={`${btnClass} w-full text-start rounded-2xl p-3 flex items-center justify-between gap-3`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div
-                    className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${item.gradient} shrink-0 shadow-inner border border-white/80`}
-                  />
-                  <div className="min-w-0">
-                    <div className="text-xs font-extrabold truncate">
-                      {item.title}
-                    </div>
-                    <div className="text-[10px] opacity-75 truncate">
-                      {item.prompt}
+              <div key={item.id} className={`${btnClass} w-full text-start rounded-2xl p-3 flex items-center gap-3`}>
+                <button
+                  type="button"
+                  onClick={() => loadCreationPreset(item)}
+                  className="flex-1 min-w-0 flex items-center justify-between gap-3 text-start"
+                  aria-label={`Load preset ${item.title}`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-10 h-10 rounded-2xl bg-gradient-to-tr ${item.gradient} shrink-0 shadow-inner border border-white/80`} />
+                    <div className="min-w-0">
+                      <div className="text-xs font-extrabold truncate">{item.title}</div>
+                      <div className="text-[10px] opacity-75 truncate">{item.prompt}</div>
                     </div>
                   </div>
-                </div>
-                <div className="text-end font-mono shrink-0">
-                  <div className="text-[11px] font-bold text-indigo-500">
-                    {item.refractionIndex}
+                  <div className="text-end font-mono shrink-0">
+                    <div className="text-[11px] font-bold text-indigo-500">{item.refractionIndex}</div>
+                    <div className="text-[10px] opacity-60 flex items-center gap-1">
+                      <RotateCcw className="w-2.5 h-2.5" />
+                      <span>{lang === "fa" ? "بازیابی" : "Load"}</span>
+                    </div>
                   </div>
-                  <div className="text-[10px] opacity-60 flex items-center gap-1">
-                    <RotateCcw className="w-2.5 h-2.5" />
-                    <span>Load</span>
-                  </div>
-                </div>
-              </button>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteCreationPreset(item.id)}
+                  aria-label={lang === "fa" ? `حذف preset ${item.title}` : `Delete preset ${item.title}`}
+                  className="shrink-0 rounded-lg p-2 text-rose-500/80 hover:text-rose-600 hover:bg-rose-500/10"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             ))}
           </div>
         </div>

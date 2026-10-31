@@ -140,6 +140,7 @@ html {
 body {
   min-width: 320px;
   min-height: 100svh;
+  min-height: 100dvh;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-x: none;
 }

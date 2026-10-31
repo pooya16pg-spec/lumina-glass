@@ -54,11 +54,16 @@ export default function LiquidHeader() {
     },
   ];
 
-  const TABS: { id: StudioTab; fa: string; en: string; icon: any }[] = [
+  const TABS: {
+    id: StudioTab;
+    fa: string;
+    en: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[] = [
     {
       id: "SYNTHESIS",
-      fa: "شیشه مایع و AI",
-      en: "Liquid AI Studio",
+      fa: "شیشه مایع و اپتیک",
+      en: "Liquid Optical Studio",
       icon: Sparkles,
     },
     {
@@ -93,7 +98,6 @@ export default function LiquidHeader() {
         }}
         className={`${shellClass} rounded-[24px] sm:rounded-[28px] p-2.5 sm:px-5 sm:py-3 transition-all overflow-hidden`}
       >
-        {/* ردیف بالا: کاملاً ضد بیرون‌زدگی در اندروید */}
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0 max-w-full">
             <div className="btn-liquid-primary flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs shrink-0">
@@ -103,7 +107,6 @@ export default function LiquidHeader() {
               </span>
             </div>
 
-            {/* کادر پروفایل بهینه‌شده برای موبایل اندروید */}
             <button
               onClick={() => setActiveTab("ECOSYSTEM")}
               className={`${btnClass} flex items-center gap-2 px-2.5 py-1 rounded-full text-xs min-w-0 overflow-hidden`}
@@ -139,7 +142,6 @@ export default function LiquidHeader() {
             </button>
           </div>
 
-          {/* کنترل تم و زبان در موبایل و دسکتاپ */}
           <div className="flex items-center gap-1.5 max-w-full overflow-x-auto py-0.5">
             <div className="flex items-center gap-1 p-1 rounded-full bg-black/5 border border-white/30 shrink-0">
               <Sun className="w-3.5 h-3.5 mx-1 opacity-70 hidden md:inline" />
@@ -183,7 +185,6 @@ export default function LiquidHeader() {
           </div>
         </div>
 
-        {/* نوار سوییچ ۴ استودیوی داخلی */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 sm:gap-2 mt-2.5 pt-2.5 border-t border-white/25">
           {TABS.map((tab) => {
             const Icon = tab.icon;

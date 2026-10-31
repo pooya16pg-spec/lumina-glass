@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLuminaStore } from "../store/useLuminaStore";
-import { Volume2, VolumeX, RotateCcw, Mic } from "lucide-react";
+import { Volume2, VolumeX, RotateCcw, Mic, Upload } from "lucide-react";
+
+type AudioSourceMode = "SYNTH" | "FILE" | "MIC";
 
 export default function AcousticEqLab() {
   const {
@@ -20,37 +22,42 @@ export default function AcousticEqLab() {
   const shellClass = isLight ? "liquid-shell-light" : "liquid-shell-dark";
   const btnClass = isLight ? "btn-liquid-light" : "btn-liquid-dark";
 
-  // زنجیره واقعی پردازش صدای Web Audio API (پاسخ مستقیم به نقد ChatGPT)
+  const [sourceMode, setSourceMode] = useState<AudioSourceMode>("SYNTH");
+  const [fileName, setFileName] = useState<string | null>(null);
+
   const audioCtxRef = useRef<AudioContext | null>(null);
   const filtersRef = useRef<BiquadFilterNode[]>([]);
   const oscsRef = useRef<OscillatorNode[]>([]);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
 
-  const toggleRealWebAudio = () => {
-    if (isAudioPlaying) {
-      oscsRef.current.forEach((o) => {
-        try {
-          o.stop();
-        } catch {}
-      });
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-        audioCtxRef.current = null;
-      }
-      filtersRef.current = [];
-      oscsRef.current = [];
-      setAudioPlaying(false);
-      return;
+  const stopAllAudio = () => {
+    oscsRef.current.forEach((o) => {
+      try {
+        o.stop();
+      } catch {}
+    });
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      mediaStreamRef.current = null;
     }
+    if (audioElRef.current) {
+      audioElRef.current.pause();
+      audioElRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      audioCtxRef.current.close().catch(() => {});
+      audioCtxRef.current = null;
+    }
+    filtersRef.current = [];
+    oscsRef.current = [];
+    setAudioPlaying(false);
+  };
 
-    const AudioCtx =
-      window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    const ctx = new AudioCtx();
-    audioCtxRef.current = ctx;
-
+  const buildFilterChain = (ctx: AudioContext) => {
     const masterGain = ctx.createGain();
-    masterGain.gain.value = 0.14;
+    masterGain.gain.value = 0.22;
 
-    // ساخت ۵ فیلتر واقعی BiquadFilterNode مطابق با ۵ اسلایدر اکولایزر
     const createdFilters: BiquadFilterNode[] = eqBands.map((band, idx) => {
       const f = ctx.createBiquadFilter();
       f.type =
@@ -65,15 +72,25 @@ export default function AcousticEqLab() {
       return f;
     });
 
-    // اتصال زنجیره‌ای فیلترها
     for (let i = 0; i < createdFilters.length - 1; i++) {
       createdFilters[i].connect(createdFilters[i + 1]);
     }
     createdFilters[createdFilters.length - 1].connect(masterGain);
     masterGain.connect(ctx.destination);
     filtersRef.current = createdFilters;
+    return createdFilters[0];
+  };
 
-    // تولید آکورد هارمونیک گرم (62Hz Bass + 124Hz + 248Hz + 496Hz + 992Hz)
+  const startSynthMode = () => {
+    stopAllAudio();
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    const ctx = new AudioCtx();
+    audioCtxRef.current = ctx;
+    const firstFilter = buildFilterChain(ctx);
+
     const freqs = [62, 124, 248, 372, 992];
     const createdOscs: OscillatorNode[] = freqs.map((hz, i) => {
       const osc = ctx.createOscillator();
@@ -82,16 +99,72 @@ export default function AcousticEqLab() {
       osc.frequency.value = hz;
       oscGain.gain.value = i === 0 ? 0.55 : 0.18 / i;
       osc.connect(oscGain);
-      oscGain.connect(createdFilters[0]);
+      oscGain.connect(firstFilter);
       osc.start();
       return osc;
     });
 
     oscsRef.current = createdOscs;
+    setSourceMode("SYNTH");
     setAudioPlaying(true);
   };
 
-  // اعمال بلادرنگ تغییرات اسلایدرها روی فیلترهای صوتی واقعی مرورگر
+  // پردازش ورودی واقعی میکروفون کاربر از طریق ۵ فیلتر Biquad (پاسخ به نقد ChatGPT)
+  const startMicMode = async () => {
+    try {
+      stopAllAudio();
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext })
+          .webkitAudioContext;
+      const ctx = new AudioCtx();
+      audioCtxRef.current = ctx;
+      const firstFilter = buildFilterChain(ctx);
+
+      const micSource = ctx.createMediaStreamSource(stream);
+      micSource.connect(firstFilter);
+      setSourceMode("MIC");
+      setAudioPlaying(true);
+    } catch {
+      alert(
+        lang === "fa"
+          ? "دسترسی به میکروفون داده نشد؛ سینت‌سایزر داخلی فعال می‌شود."
+          : "Microphone permission denied; falling back to internal synth."
+      );
+      startSynthMode();
+    }
+  };
+
+  // پردازش فایل صوتی انتخابی کاربر (MP3/WAV) از طریق اکولایزر ۵ بانده
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    stopAllAudio();
+    setFileName(file.name);
+
+    const url = URL.createObjectURL(file);
+    const audio = new Audio(url);
+    audio.loop = true;
+    audioElRef.current = audio;
+
+    const AudioCtx =
+      window.AudioContext ||
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    const ctx = new AudioCtx();
+    audioCtxRef.current = ctx;
+    const firstFilter = buildFilterChain(ctx);
+
+    const mediaNode = ctx.createMediaElementSource(audio);
+    mediaNode.connect(firstFilter);
+    audio.play();
+    setSourceMode("FILE");
+    setAudioPlaying(true);
+  };
+
   useEffect(() => {
     if (!audioCtxRef.current || filtersRef.current.length === 0) return;
     eqBands.forEach((band, idx) => {
@@ -106,11 +179,10 @@ export default function AcousticEqLab() {
     });
   }, [eqBands]);
 
+  // رفع باگ خروج از تب صدا: هنگام unmount شدن کامپوننت، هم AudioContext بسته می‌شود و هم isAudioPlaying=false می‌شود
   useEffect(() => {
     return () => {
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-      }
+      stopAllAudio();
     };
   }, []);
 
@@ -126,52 +198,76 @@ export default function AcousticEqLab() {
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/25 pb-4">
         <div>
           <span className="text-[10px] sm:text-[11px] font-mono font-bold px-3 py-1 rounded-full bg-pink-500/15 text-pink-500 border border-pink-400/30">
-            REAL WEB AUDIO API • 5-BAND BIQUAD FILTER DSP
+            REAL WEB AUDIO API • SYNTH + MICROPHONE + AUDIO FILE DSP
           </span>
           <h2 className="text-base sm:text-2xl font-black mt-2 flex items-center gap-2">
             <Mic className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500 shrink-0" />
             <span>
               {lang === "fa"
-                ? "موتور پردازش صدای واقعی (Web Audio API) و اکولایزر ۵ بانده"
-                : "Real Web Audio API Synthesizer & 5-Band Parametric EQ"}
+                ? "استودیوی پردازش صدای واقعی (سینت‌سایزر، میکروفون و فایل صوتی)"
+                : "Real Web Audio DSP Equalizer (Synth, Live Mic & Audio File)"}
             </span>
           </h2>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {isAudioPlaying ? (
+            <button
+              onClick={stopAllAudio}
+              className="btn-liquid-primary px-4 py-2.5 rounded-full text-xs flex items-center gap-2"
+            >
+              <Volume2 className="w-4 h-4 animate-bounce" />
+              <span>
+                {lang === "fa"
+                  ? `توقف صدا (${sourceMode})`
+                  : `Stop Audio (${sourceMode})`}
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={startSynthMode}
+              className="btn-liquid-primary px-4 py-2.5 rounded-full text-xs flex items-center gap-2"
+            >
+              <VolumeX className="w-4 h-4" />
+              <span>
+                {lang === "fa" ? "پخش سینت‌سایزر ۶۲Hz" : "Play 62Hz Synth"}
+              </span>
+            </button>
+          )}
+
           <button
-            onClick={toggleRealWebAudio}
-            className="btn-liquid-primary px-4 sm:px-5 py-2.5 rounded-full text-xs flex items-center gap-2"
+            onClick={startMicMode}
+            className={`${btnClass} px-3.5 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5`}
           >
-            {isAudioPlaying ? (
-              <>
-                <Volume2 className="w-4 h-4 animate-bounce" />
-                <span>
-                  {lang === "fa"
-                    ? "توقف صدای موتور DSP (Playing)"
-                    : "Stop Real WebAudio Synth"}
-                </span>
-              </>
-            ) : (
-              <>
-                <VolumeX className="w-4 h-4" />
-                <span>
-                  {lang === "fa"
-                    ? "پخش صدای واقعی موتور DSP"
-                    : "Play Real WebAudio Synth"}
-                </span>
-              </>
-            )}
+            <Mic className="w-3.5 h-3.5 text-pink-500" />
+            <span>{lang === "fa" ? "ورودی میکروفون" : "Live Mic Input"}</span>
           </button>
+
+          <label
+            className={`${btnClass} px-3.5 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer`}
+          >
+            <Upload className="w-3.5 h-3.5 text-indigo-500" />
+            <span>
+              {fileName
+                ? fileName.slice(0, 14)
+                : lang === "fa"
+                ? "آپلود فایل صوتی"
+                : "Upload MP3/WAV"}
+            </span>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+          </label>
 
           <button
             onClick={resetEqBands}
             className={`${btnClass} px-3.5 py-2.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5`}
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>
-              {lang === "fa" ? "ریست (+0.3dB @ 62Hz)" : "Reset (+0.3dB @ 62Hz)"}
-            </span>
+            <span>Reset</span>
           </button>
         </div>
       </div>

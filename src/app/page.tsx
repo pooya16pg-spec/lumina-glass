@@ -23,7 +23,7 @@ export default function LuminaGlassPage() {
       : "liquid-env-titanium";
 
   return (
-    <div className={`min-h-screen ${envClass} relative overflow-hidden flex flex-col pb-10`}>
+    <div className={`min-h-[100svh] ${envClass} relative overflow-hidden flex flex-col pb-[calc(1.5rem+env(safe-area-inset-bottom))]`}>
       {/* گوی‌های نوری سیال در پس‌زمینه برای ایجاد شکست نور واقعی زیر شیشه مایع */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="liquid-blob absolute -top-20 left-10 w-80 h-80 rounded-full bg-indigo-400/30 blur-3xl" />
@@ -34,7 +34,7 @@ export default function LuminaGlassPage() {
       <div className="relative z-10 flex-1 flex flex-col space-y-6">
         <LiquidHeader />
 
-        <main className="max-w-[1680px] w-full mx-auto px-3 lg:px-8 flex-1">
+        <main className="max-w-[1680px] w-full mx-auto px-3 sm:px-4 lg:px-8 flex-1 min-w-0 pb-4">
           {activeTab === "SYNTHESIS" && <AiSynthesisStudio />}
           {activeTab === "ACOUSTIC" && <AcousticEqLab />}
           {activeTab === "WORKFLOW" && <LiquidTaskBoard />}

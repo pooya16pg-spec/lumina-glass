@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 // @ts-ignore
 import "./globals.css";
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#0B1021" };
 
 export const metadata: Metadata = {
   title: "LuminaGlass | Pooya Goodarzi — Liquid Glass Spatial AI & Audio Studio",
   description:
-    "Next-Gen Liquid Glass Spatial Interface, Generative 3D Synthesis, Parametric Vocal EQ & Portfolio Hub by Pooya Goodarzi.",
+    "Responsive Liquid Glass optical studio, browser-native audio EQ and engineering portfolio by Pooya Goodarzi.",
 };
 
 export default function RootLayout({

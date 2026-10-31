@@ -89,7 +89,7 @@ export default function LiquidHeader() {
   return (
     <div
       dir={lang === "fa" ? "rtl" : "ltr"}
-      className="sticky top-2 z-40 max-w-[1680px] w-full mx-auto px-2.5 sm:px-4 lg:px-8"
+      className="sticky top-[calc(0.5rem+env(safe-area-inset-top))] z-40 max-w-[1680px] w-full mx-auto px-2.5 sm:px-4 lg:px-8"
     >
       <header
         style={{

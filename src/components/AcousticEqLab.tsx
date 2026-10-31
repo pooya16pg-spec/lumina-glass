@@ -274,11 +274,11 @@ export default function AcousticEqLab() {
           </h2>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           {isAudioPlaying ? (
             <button
               onClick={stopAllAudio}
-              className="btn-liquid-primary px-4 py-2.5 rounded-full text-xs flex items-center gap-2"
+              className="btn-liquid-primary min-h-11 px-4 py-2.5 rounded-full text-xs flex items-center gap-2"
             >
               <Volume2 className="w-4 h-4 animate-bounce" />
               <span>
@@ -301,7 +301,7 @@ export default function AcousticEqLab() {
 
           <button
             onClick={startMicMode}
-            className={`${btnClass} px-3.5 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5`}
+            className={`${btnClass} min-h-11 px-3.5 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5`}
           >
             <Mic className="w-3.5 h-3.5 text-pink-500" />
             <span>{lang === "fa" ? "ورودی میکروفون" : "Live Mic Input"}</span>
@@ -328,7 +328,7 @@ export default function AcousticEqLab() {
 
           <button
             onClick={resetEqBands}
-            className={`${btnClass} px-3.5 py-2.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5`}
+            className={`${btnClass} min-h-11 px-3.5 py-2.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5`}
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset</span>

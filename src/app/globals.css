@@ -180,3 +180,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   .lumina-header-scroll::-webkit-scrollbar { display: none; }
   .liquid-task-column { min-width: 0; overflow-wrap: anywhere; }
 }
+
+.lumina-page { min-height: 100svh; min-height: 100dvh; }
+@media (hover: none) { .btn-liquid-light:hover, .btn-liquid-dark:hover, .btn-liquid-primary:hover { transform: none; filter: none; } }

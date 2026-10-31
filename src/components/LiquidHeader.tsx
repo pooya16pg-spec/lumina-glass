@@ -142,7 +142,7 @@ export default function LiquidHeader() {
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 max-w-full overflow-x-auto py-0.5">
+          <div className="lumina-header-scroll flex items-center gap-1.5 max-w-full overflow-x-auto py-0.5">
             <div className="flex items-center gap-1 p-1 rounded-full bg-black/5 border border-white/30 shrink-0">
               <Sun className="w-3.5 h-3.5 mx-1 opacity-70 hidden md:inline" />
               {THEMES.map((t) => (

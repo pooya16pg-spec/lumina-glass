@@ -23,7 +23,7 @@ export default function LuminaGlassPage() {
       : "liquid-env-titanium";
 
   return (
-    <div className={`min-h-[100svh] ${envClass} relative flex flex-col pb-[calc(1.5rem+env(safe-area-inset-bottom))]`}>
+    <div className={`lumina-page min-h-[100svh] min-h-[100dvh] ${envClass} relative flex flex-col pb-[calc(1.5rem+env(safe-area-inset-bottom))]`}>
       {/* گوی‌های نوری سیال در پس‌زمینه برای ایجاد شکست نور واقعی زیر شیشه مایع */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="liquid-blob absolute -top-20 left-10 w-80 h-80 rounded-full bg-indigo-400/30 blur-3xl" />

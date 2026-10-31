@@ -10,7 +10,7 @@ body {
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
   transition: background 0.5s ease, color 0.3s ease;
 }
 

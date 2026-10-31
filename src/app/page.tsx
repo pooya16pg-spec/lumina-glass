@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useLuminaStore } from "../store/useLuminaStore";
 import LiquidHeader from "../components/LiquidHeader";
 import AiSynthesisStudio from "../components/AiSynthesisStudio";
@@ -9,7 +9,11 @@ import LiquidTaskBoard from "../components/LiquidTaskBoard";
 import EcosystemShowcase from "../components/EcosystemShowcase";
 
 export default function LuminaGlassPage() {
-  const { theme, activeTab } = useLuminaStore();
+  const { theme, activeTab, hydrateLuminaPreferences } = useLuminaStore();
+
+  useEffect(() => {
+    hydrateLuminaPreferences();
+  }, [hydrateLuminaPreferences]);
 
   const envClass =
     theme === "PEARL"

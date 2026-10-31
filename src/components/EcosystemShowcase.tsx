@@ -27,10 +27,10 @@ export default function EcosystemShowcase() {
     {
       num: "02",
       name: "AuraPulse — Quant FinTech Terminal",
-      styleTag: "High-Frequency Vector Charting & L2 Book",
+      styleTag: "SVG Charting & Paper Trading Demo",
       desc: {
-        fa: "ترمینال معاملاتی کوانتومی با موتور چارت برداری SVG، باندهای بولینگر، دفتر سفارشات زنده و ربات تریدر هوش مصنوعی.",
-        en: "Real-time algorithmic trading terminal with custom SVG candlestick engine, Bollinger Bands & AI Bot.",
+        fa: "داشبورد بازار با چارت SVG، دفتر سفارشات شبیه‌سازی‌شده و معاملات آزمایشی محلی؛ قیمت عمومی بایننس در صورت دسترسی شبکه.",
+        en: "Market dashboard with SVG candles, a simulated order book, and local paper trading; public Binance tickers when reachable.",
       },
       url: "https://pooya16pg-spec.github.io/aurapulse/",
       accent: "from-emerald-400 to-teal-500",

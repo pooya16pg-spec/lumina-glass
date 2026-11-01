@@ -15,12 +15,12 @@ export default function LuminaGlassPage() {
     hydrateLuminaPreferences();
   }, [hydrateLuminaPreferences]);
 
-  const envClass
-
   useEffect(() => {
     document.documentElement.lang = lang === "fa" ? "fa" : "en";
     document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
-  }, [lang]); =
+  }, [lang]);
+
+  const envClass =
     theme === "PEARL"
       ? "liquid-env-pearl"
       : theme === "AURORA"

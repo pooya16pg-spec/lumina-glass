@@ -9,11 +9,16 @@ import LiquidTaskBoard from "../components/LiquidTaskBoard";
 import EcosystemShowcase from "../components/EcosystemShowcase";
 
 export default function LuminaGlassPage() {
-  const { theme, activeTab, hydrateLuminaPreferences } = useLuminaStore();
+  const { lang, theme, activeTab, hydrateLuminaPreferences } = useLuminaStore();
 
   useEffect(() => {
     hydrateLuminaPreferences();
   }, [hydrateLuminaPreferences]);
+
+  useEffect(() => {
+    document.documentElement.lang = lang === "fa" ? "fa" : "en";
+    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+  }, [lang]);
 
   const envClass =
     theme === "PEARL"

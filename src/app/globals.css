@@ -183,3 +183,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .lumina-page { min-height: 100svh; min-height: 100dvh; }
 @media (hover: none) { .btn-liquid-light:hover, .btn-liquid-dark:hover, .btn-liquid-primary:hover { transform: none; filter: none; } }
+
+@media (hover: none) and (pointer: coarse) {
+  button, [role="button"] { min-height: 44px; }
+  input:not([type="range"]), textarea, select { min-height: 44px; font-size: 16px; }
+  input[type="range"] { min-height: 44px; padding-block: 12px; }
+}

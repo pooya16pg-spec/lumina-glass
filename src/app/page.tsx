@@ -9,7 +9,7 @@ import LiquidTaskBoard from "../components/LiquidTaskBoard";
 import EcosystemShowcase from "../components/EcosystemShowcase";
 
 export default function LuminaGlassPage() {
-  const { theme, activeTab, hydrateLuminaPreferences } = useLuminaStore();
+  const { lang, theme, activeTab, hydrateLuminaPreferences } = useLuminaStore();
 
   useEffect(() => {
     hydrateLuminaPreferences();
